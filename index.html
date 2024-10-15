@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+
+        #gameCanvas {
+            background-color: #000;
+            width: 90vw;
+            height: 90vw;
+            max-width: 400px;
+            max-height: 400px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+            width: 90vw;
+            max-width: 300px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            font-size: 24px;
+            background-color: #ddd;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:active {
+            background-color: #bbb;
+        }
+
+        .blank {
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="controls">
+        <button id="up">↑</button>
+        <button class="blank"></button>
+        <button id="down">↓</button>
+        <button id="left">←</button>
+        <button class="blank"></button>
+        <button id="right">→</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const gridSize = 20;
+        let snake = [{ x: gridSize * 5, y: gridSize * 5 }];
+        let food = { x: gridSize * 10, y: gridSize * 10 };
+        let direction = { x: 0, y: 0 };
+
+        function resizeCanvas() {
+            const size = Math.min(window.innerWidth, window.innerHeight) * 0.9;
+            canvas.width = size;
+            canvas.height = size;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "green";
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
+            });
+
+            ctx.fillStyle = "red";
+            ctx.fillRect(food.x, food.y, gridSize, gridSize);
+        }
+
+        function update() {
+            const head = { x: snake[0].x + direction.x * gridSize, y: snake[0].y + direction.y * gridSize };
+
+            // Check food collision
+            if (head.x === food.x && head.y === food.y) {
+                food = { x: Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize,
+                         y: Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize };
+            } else {
+                snake.pop();
+            }
+
+            // Check boundaries and snake collision
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height ||
+                snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+                alert("Game Over");
+                snake = [{ x: gridSize * 5, y: gridSize * 5 }];
+                direction = { x: 0, y: 0 };
+                return;
+            }
+
+            snake.unshift(head);
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            setTimeout(gameLoop, 100);
+        }
+
+        // Mobile controls
+        document.getElementById("up").addEventListener("click", () => { direction = { x: 0, y: -1 }; });
+        document.getElementById("down").addEventListener("click", () => { direction = { x: 0, y: 1 }; });
+        document.getElementById("left").addEventListener("click", () => { direction = { x: -1, y: 0 }; });
+        document.getElementById("right").addEventListener("click", () => { direction = { x: 1, y: 0 }; });
+
+        // Start game
+        gameLoop();
+    </script>
+
+</body>
+</html>
